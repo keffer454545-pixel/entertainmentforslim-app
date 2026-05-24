@@ -1,0 +1,22 @@
+# 🔒 Vault - Personal Collection Manager
+
+Управляйте своей коллекцией игр, фильмов, сериалов и аниме.
+
+## 🚀 Быстрый старт
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vault-app&env=GOOGLE_CLIENT_ID,GOOGLE_API_KEY)
+
+1. Нажмите кнопку "Deploy"
+2. Введите Google Client ID и API Key
+3. Готово! Ваше приложение доступно по URL
+
+## 🔧 Настройка Google API
+
+[Подробная инструкция](SETUP.md)
+
+## 📦 Локальная разработка
+
+```bash
+git clone https://github.com/YOUR_USERNAME/vault-app
+cd vault-app
+npx serve .

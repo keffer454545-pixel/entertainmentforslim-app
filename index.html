@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-client-id" content="__GOOGLE_CLIENT_ID__">
+    <meta name="google-api-key" content="__GOOGLE_API_KEY__">
+    <title>Vault - Хранилище коллекции</title>
+    <!-- Google API -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --glass-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: rgba(148, 163, 184, 0.1);
+            --card-ratio: 2.1395;
+        }
+
+        .light-theme {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Сайдбар */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .categories-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 2px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .category-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .category-item.active {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .category-color {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .category-name { flex: 1; font-weight: 500; }
+        
+        .category-count {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .add-category-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            margin: 8px 12px;
+            border: 2px dashed var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            background: none;
+            width: calc(100% - 24px);
+        }
+
+        .add-category-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            color: white;
+        }
+
+        /* Основная область */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 20px 28px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .category-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-tertiary);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .view-btn {
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .add-card-btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .add-card-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .filter-chips {
+            padding: 12px 28px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .chip {
+            padding: 5px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        /* Сетка карточек */
+        .cards-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+            gap: 16px;
+            align-content: start;
+        }
+
+        .cards-container.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Карточка в сетке */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .card-cover-container {
+            position: relative;
+            width: 100%;
+            padding-top: 46.73%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        }
+
+        .card-cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-cover-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .card-body {
+            padding: 14px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .tag {
+            padding: 2px 8px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 10px;
+            font-size: 11px;
+            color: var(--accent-purple);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .card-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            color: var(--accent-yellow);
+            font-size: 13px;
+        }
+
+        .card-status {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .status-playing { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .status-dropped { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .status-plan { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); }
+
+        /* Карточка в списке */
+        .card-list {
+            display: flex;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 100px;
+        }
+
+        .card-list:hover {
+            background: var(--bg-tertiary);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .card-list-cover {
+            width: 214px;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        }
+
+        .card-list-body {
+            flex: 1;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Модальное окно карточки */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-cover-container {
+            position: relative;
+            width: 100%;
+            padding-top: 46.73%;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+        }
+
+        .modal-cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .cover-nav:hover { background: rgba(0, 0, 0, 0.8); }
+        .cover-nav.prev { left: 12px; }
+        .cover-nav.next { right: 12px; }
+
+        .cover-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .cover-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cover-dot.active { background: white; }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .modal-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .source-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .source-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+        }
+
+        /* Форма редактирования */
+        .edit-form {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .edit-form.active {
+            display: flex;
+        }
+
+        .view-mode.hidden {
+            display: none;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-textarea { min-height: 80px; resize: vertical; }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .cover-urls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cover-url-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .add-cover-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px dashed var(--glass-border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .add-cover-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        /* Модальное окно настроек */
+        .settings-modal {
+            max-width: 480px;
+        }
+
+        .settings-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 10px;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            color: #3c4043;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .theme-btn.active {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-purple);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .autofill-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--accent-blue);
+            margin-bottom: 16px;
+        }
+
+        /* Дополнительные стили для Google кнопки */
+        .google-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            color: #3c4043;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .google-btn.connected {
+            border-color: #34a853;
+            background: #f0fdf4;
+        }
+
+        .google-btn .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .google-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .google-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-purple);
+        }
+
+        .google-user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .google-user-email {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .disconnect-btn {
+            padding: 4px 12px;
+            background: var(--accent-red);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .disconnect-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--accent-green);
+            margin-top: 8px;
+        }
+
+        .sync-status.syncing {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-yellow);
+        }
+
+        .drive-file-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Сайдбар -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <div class="logo-text">Vault</div>
+            </div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск..." id="globalSearch">
+            </div>
+        </div>
+
+        <nav class="categories-list" id="categoriesList"></nav>
+
+        <button class="add-category-btn" onclick="app.showAddCategoryModal()">
+            ➕ Новая категория
+        </button>
+
+        <div class="sidebar-footer">
+            <button class="settings-btn" onclick="app.openSettings()">
+                ⚙️ Настройки
+            </button>
+        </div>
+    </aside>
+
+    <!-- Основная область -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-left">
+                <h1 class="category-title" id="categoryTitle">Все карточки</h1>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="app.setView('grid')">⊞</button>
+                    <button class="view-btn" onclick="app.setView('list')">☰</button>
+                </div>
+            </div>
+            <button class="add-card-btn" onclick="app.showAddCardModal()">
+                ➕ Добавить
+            </button>
+        </header>
+
+        <div class="filter-chips" id="filterChips">
+            <span class="chip active" data-filter="all" onclick="app.filterCards('all')">Все</span>
+            <span class="chip" data-filter="completed" onclick="app.filterCards('completed')">Пройдено</span>
+            <span class="chip" data-filter="playing" onclick="app.filterCards('playing')">В процессе</span>
+            <span class="chip" data-filter="plan-to-play" onclick="app.filterCards('plan-to-play')">Запланировано</span>
+            <span class="chip" data-filter="dropped" onclick="app.filterCards('dropped')">Заброшено</span>
+        </div>
+
+        <div class="cards-container" id="cardsContainer"></div>
+    </main>
+
+    <!-- Модальное окно карточки -->
+    <div class="modal" id="cardModal">
+        <div class="modal-content">
+            <div class="modal-cover-container" id="modalCoverContainer">
+                <img class="modal-cover" id="modalCover" src="" alt="">
+                <button class="cover-nav prev" onclick="app.navigateCover(-1)">‹</button>
+                <button class="cover-nav next" onclick="app.navigateCover(1)">›</button>
+                <div class="cover-dots" id="coverDots"></div>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Режим просмотра -->
+                <div class="view-mode" id="viewMode">
+                    <h2 class="modal-title" id="viewTitle"></h2>
+                    <p class="modal-description" id="viewDescription"></p>
+                    
+                    <a class="source-btn" id="viewSourceBtn" href="#" target="_blank">🔗 Источник</a>
+                    
+                    <div class="modal-tags" id="viewTags"></div>
+                    
+                    <div class="modal-info">
+                        <div class="info-item">
+                            <span class="info-label">Рейтинг</span>
+                            <span class="info-value" id="viewRating">⭐ —</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Статус</span>
+                            <span class="info-value" id="viewStatus">—</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item" style="margin-top: 12px;">
+                        <span class="info-label">Заметки</span>
+                        <p class="info-value" id="viewNotes" style="margin-top: 4px;">—</p>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button class="btn btn-edit" onclick="app.toggleEditMode(true)">✏️ Редактировать</button>
+                        <button class="btn btn-delete" onclick="app.deleteCard()">🗑️ Удалить</button>
+                    </div>
+                </div>
+                
+                <!-- Режим редактирования -->
+                <div class="edit-form" id="editMode">
+                    <div class="form-group">
+                        <label class="form-label">Название</label>
+                        <input type="text" class="form-input" id="editTitle">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Обложки</label>
+                        <div class="cover-urls-container" id="coverUrlsContainer">
+                            <div class="cover-url-item">
+                                <input type="text" class="form-input" placeholder="URL обложки">
+                            </div>
+                        </div>
+                        <button class="add-cover-btn" onclick="app.addCoverUrl()">+ Добавить обложку</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-textarea" id="editDescription"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Основная ссылка</label>
+                        <input type="text" class="form-input" id="editPrimaryLink" placeholder="https://...">
+                        <button class="btn" style="margin-top: 8px; background: var(--accent-blue); color: white;" onclick="app.autoFillFromUrl()">
+                            🤖 Авто-заполнить
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Теги (через запятую)</label>
+                        <input type="text" class="form-input" id="editTags">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Рейтинг (1-10)</label>
+                        <input type="number" class="form-input" id="editRating" min="1" max="10" value="5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Статус</label>
+                        <select class="form-select" id="editStatus">
+                            <option value="plan-to-play">Запланировано</option>
+                            <option value="playing">В процессе</option>
+                            <option value="completed">Пройдено</option>
+                            <option value="dropped">Заброшено</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Заметки</label>
+                        <textarea class="form-textarea" id="editNotes"></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button class="btn btn-cancel" onclick="app.toggleEditMode(false)">Отмена</button>
+                        <button class="btn btn-save" onclick="app.saveCard()">💾 Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно категории -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content settings-modal">
+            <div class="modal-body">
+                <h3 style="margin-bottom: 20px;">Создать категорию</h3>
+                <input type="hidden" id="modalCategoryId">
+                <div class="form-group">
+                    <label class="form-label">Название</label>
+                    <input type="text" class="form-input" id="modalCategoryName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Иконка</label>
+                    <input type="text" class="form-input" id="modalCategoryIcon" value="📁">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <input type="color" class="form-input" id="modalCategoryColor" value="#8b5cf6" style="height: 40px;">
+                </div>
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button class="btn btn-cancel" onclick="app.closeCategoryModal()">Отмена</button>
+                    <button class="btn btn-save" onclick="app.saveCategory()">💾 Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <!-- Обновленная секция настроек -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content settings-modal">
+            <div class="modal-body" style="padding: 0;">
+                <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border);">
+                    <h3>⚙️ Настройки</h3>
+                    <button class="btn btn-cancel" onclick="app.closeSettings()">✕</button>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="settings-title">🎨 Тема</div>
+                    <div class="theme-toggle">
+                        <button class="theme-btn active" onclick="app.setTheme('dark')">🌙 Темная</button>
+                        <button class="theme-btn" onclick="app.setTheme('light')">☀️ Светлая</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="settings-title">🔐 Google аккаунт</div>
+                    <div id="googleAuthSection">
+                        <!-- Динамически обновляется -->
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="settings-title">☁️ Google Диск</div>
+                    <button class="action-btn" onclick="app.syncToDrive()" id="syncToDriveBtn" disabled>
+                        🔄 Синхронизировать с Диском
+                    </button>
+                    <button class="action-btn" onclick="app.exportToDrive()" id="exportToDriveBtn" disabled>
+                        📤 Экспорт на Диск
+                    </button>
+                    <button class="action-btn" onclick="app.importFromDrive()" id="importFromDriveBtn" disabled>
+                        📥 Импорт с Диска
+                    </button>
+                    <div id="driveFileInfo" class="drive-file-info" style="display: none;"></div>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="settings-title">💾 Компьютер</div>
+                    <button class="action-btn" onclick="app.exportToComputer()">📤 Экспорт JSON</button>
+                    <button class="action-btn" onclick="document.getElementById('importFile').click()">📥 Импорт JSON</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none" onchange="app.importFromComputer(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="google-auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

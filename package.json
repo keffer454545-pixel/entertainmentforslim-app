@@ -1,0 +1,13 @@
+{
+  "name": "vault-collection",
+  "version": "1.0.0",
+  "description": "Vault - Personal Media Collection Manager",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "keywords": ["collection", "media", "games", "movies"],
+  "author": "Your Name",
+  "license": "MIT"
+}
