@@ -418,5 +418,5 @@ let app;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, creating VaultApp...');
     app = new VaultApp();
-    window.app = app; // Делаем доступным глобально
+    window.app = app;
 });
