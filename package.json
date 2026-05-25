@@ -1,13 +1,17 @@
 {
   "name": "vault-collection",
   "version": "1.0.0",
-  "description": "Vault - Personal Media Collection Manager",
+  "description": "Vault - Personal Media Collection Manager with Google Drive Integration",
   "main": "index.html",
   "scripts": {
     "dev": "npx serve .",
-    "start": "npx serve ."
+    "start": "npx serve .",
+    "build": "node setup-env.js"
   },
-  "keywords": ["collection", "media", "games", "movies"],
+  "keywords": ["collection", "media", "games", "movies", "google-drive"],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
 }
