@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-client-id" content="__GOOGLE_CLIENT_ID__">
-    <meta name="google-api-key" content="__GOOGLE_API_KEY__">
     <title>Vault - Хранилище коллекции</title>
+    <script>
+        // Конфигурация из переменных окружения (будет заменена при деплое)
+        window.ENV = {
+            GOOGLE_CLIENT_ID: '%%GOOGLE_CLIENT_ID%%',
+            GOOGLE_API_KEY: '%%GOOGLE_API_KEY%%'
+        };
+    </script>
     <style>
         :root {
             --bg-primary: #0f172a;
