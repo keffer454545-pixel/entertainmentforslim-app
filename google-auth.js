@@ -75,6 +75,58 @@ class GoogleAuth {
         });
     }
 
+    async syncToDrive() {
+    if (!this.accessToken) {
+        app.showToast('❌ Войдите в Google аккаунт');
+        return;
+    }
+
+    app.showToast('🔄 Синхронизация с Google Диском...');
+
+    try {
+        // Ищем или создаем папку Vault
+        let folderId = localStorage.getItem('googleDriveFolderId');
+        
+        if (!folderId) {
+            const folderResponse = await gapi.client.drive.files.create({
+                resource: {
+                    name: 'Vault Backups',
+                    mimeType: 'application/vnd.google-apps.folder'
+                },
+                fields: 'id'
+            });
+            folderId = folderResponse.result.id;
+            localStorage.setItem('googleDriveFolderId', folderId);
+        }
+
+        // Сохраняем данные
+        const vaultData = JSON.stringify(app.data, null, 2);
+        const fileName = `vault_backup_${new Date().toISOString().split('T')[0]}.json`;
+        
+        const file = new Blob([vaultData], { type: 'application/json' });
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/json',
+            parents: [folderId]
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+
+        await gapi.client.request({
+            path: '/upload/drive/v3/files',
+            method: 'POST',
+            params: { uploadType: 'multipart' },
+            body: form
+        });
+
+        app.showToast('✅ Синхронизировано с Google Диском');
+    } catch (error) {
+        console.error('Ошибка синхронизации:', error);
+        app.showToast('❌ Ошибка синхронизации: ' + error.message);
+    }
+}
     async loadUserInfo() {
         try {
             const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
