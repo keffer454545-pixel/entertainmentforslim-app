@@ -314,7 +314,11 @@ class VaultApp {
     }
 
     syncToCloud() {
-        this.showToast('Синхронизация... (требуется Google авторизация)');
+        if (googleAuth && googleAuth.accessToken) {
+            googleAuth.syncToDrive();
+        } else {
+            this.showToast('❌ Сначала войдите через Google');
+        }
     }
 
     // Поиск
