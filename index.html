@@ -518,39 +518,21 @@
     </div>
 
     <!-- Модальное окно настроек -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <h2>⚙️ Настройки</h2>
-            
-            <div class="form-group">
-                <label class="form-label">Тема</label>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="app.setTheme('dark')">🌙 Темная</button>
-                    <button class="btn btn-secondary" onclick="app.setTheme('light')">☀️ Светлая</button>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Google Диск</label>
-                <button class="btn btn-primary" onclick="googleAuth.login()" style="width: 100%; margin-bottom: 8px;">
-                    🔐 Войти через Google
-                </button>
-                <button class="btn btn-secondary" onclick="app.syncToCloud()" style="width: 100%; margin-bottom: 8px;">
-                    🔄 Синхронизировать
-                </button>
-                <button class="btn btn-secondary" onclick="app.exportToComputer()" style="width: 100%; margin-bottom: 8px;">
-                    📤 Экспорт JSON
-                </button>
-                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="width: 100%;">
-                    📥 Импорт JSON
-                </button>
-                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="app.importFromComputer(event)">
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeSettings()">Закрыть</button>
-            </div>
-        </div>
+    <div class="form-group">
+    <label class="form-label">Google Диск</label>
+    <div id="googleAuthSection">
+        <!-- Сюда будет вставлена кнопка входа или информация о пользователе -->
+    </div>
+        <button class="btn btn-secondary" onclick="app.syncToCloud()" style="width: 100%; margin-bottom: 8px; margin-top: 8px;">
+            🔄 Синхронизировать
+        </button>
+        <button class="btn btn-secondary" onclick="app.exportToComputer()" style="width: 100%; margin-bottom: 8px;">
+            📤 Экспорт JSON
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="width: 100%;">
+            📥 Импорт JSON
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="app.importFromComputer(event)">
     </div>
 
     <!-- Google API -->
